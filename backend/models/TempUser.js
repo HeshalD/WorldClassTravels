@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import validator from 'validator';
 
-const userSchema = new mongoose.Schema({
+const tempUserSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: [true, 'First name is required'],
@@ -40,67 +40,39 @@ const userSchema = new mongoose.Schema({
     },
     otp: {
         type: String,
-        select: false
+        required: true
     },
     otpExpires: {
         type: Date,
-        select: false
-    },
-    isVerified: {
-        type: Boolean,
-        default: false,
-        select: false
-    },
-    passwordResetToken: {
-        type: String,
-        select: false
-    },
-    passwordResetExpires: {
-        type: Date,
-        select: false
+        required: true
     },
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        expires: 600 // Document will be automatically deleted after 10 minutes
     }
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
-    // Only hash the password if it has been modified (or is new) and not already hashed
-    if (!this.isModified('password')) {
-        if (typeof next === 'function') return next();
-        return;
-    }
-    
-    // Check if the password is already hashed (starts with $2b$ or $2a$)
-    if (this.password && (this.password.startsWith('$2a$') || this.password.startsWith('$2b$'))) {
-        if (typeof next === 'function') return next();
-        return;
-    }
+tempUserSchema.pre('save', async function() {
+    if (!this.isModified('password')) return;
     
     try {
-        this.password = await bcrypt.hash(this.password, 12);
-        if (typeof next === 'function') next();
+        const hash = await bcrypt.hash(this.password, 12);
+        this.password = hash;
     } catch (error) {
-        if (typeof next === 'function') next(error);
-        else throw error;
+        throw error;
     }
 });
 
-// Method to compare passwords
-userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
-    return await bcrypt.compare(candidatePassword, userPassword);
-};
-
 // Method to generate OTP
-userSchema.methods.createOTP = function() {
+tempUserSchema.methods.createOTP = function() {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     this.otp = otp;
-    this.otpExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+    this.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
     return otp;
 };
 
-const User = mongoose.model('User', userSchema);
+const TempUser = mongoose.model('TempUser', tempUserSchema);
 
-export default User;
+export default TempUser;
