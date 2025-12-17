@@ -5,8 +5,9 @@ import australia from '../Images/australia1.jpg';
 import china from '../Images/china1.jpg';
 import malaysia from '../Images/malaysia1.jpg';
 import philippines from '../Images/philippines1.jpg';
-import Masonry from './Masonry';
-import travelVideo from '../Videos/flying.mp4';   
+import Masonry from './Masonry';  
+
+const videoUrl = process.env.REACT_APP_VIDEO_FLYING_URL ; 
 
 const items = [
     {
@@ -41,7 +42,9 @@ const items = [
     },
 ];
 
-export default function TravelSection() {
+export default function TicketingSection() {
+
+
     return (
         <div className="min-h-screen bg-white flex items-center justify-center p-8 relative overflow-hidden">
             {/* Video background – only change made */}
@@ -53,7 +56,7 @@ export default function TravelSection() {
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ opacity: 0.4 }}
             >
-                <source src={travelVideo} type="video/mp4" />
+                <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
 

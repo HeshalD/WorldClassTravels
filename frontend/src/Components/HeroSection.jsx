@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import australiaVideo from '../Videos/australiaVid1.mp4';
-import indiaVideo from '../Videos/indiaVid1.mp4';
-import chinaVideo from '../Videos/chinaVid1.mp4';
-import canadaVideo from '../Videos/canadaVid1.mp4';
-import phillippinesVideo from '../Videos/philippinesVid1.mp4';
-import americaVideo from '../Videos/americaVid1.mp4';
+//import australiaVideo from '../Videos/australiaVid1.mp4';
+//import indiaVideo from '../Videos/indiaVid1.mp4';
+//import chinaVideo from '../Videos/chinaVid1.mp4';
+//import canadaVideo from '../Videos/canadaVid1.mp4';
+//import phillippinesVideo from '../Videos/philippinesVid1.mp4';
+//import americaVideo from '../Videos/americaVid1.mp4';
 import Header from './Header';
+
+const videoURLs = {
+  australiaVideo: process.env.REACT_APP_VIDEO_AUSTRALIA_URL,
+  chinaVideo: process.env.REACT_APP_VIDEO_CHINA_URL,
+  canadaVideo: process.env.REACT_APP_VIDEO_CANADA_URL,
+  phillippinesVideo: process.env.REACT_APP_VIDEO_PHILIPPINES_URL,
+  americaVideo: process.env.REACT_APP_VIDEO_AMERICA_URL
+}
 
 
 export default function TravelHero() {
@@ -14,11 +22,11 @@ export default function TravelHero() {
   
   // Array of video URLs - replace these with your actual video URLs
   const videos = [
-    australiaVideo,
-    chinaVideo,
-    canadaVideo,
-    phillippinesVideo,
-    americaVideo
+    videoURLs.australiaVideo,
+    videoURLs.chinaVideo,
+    videoURLs.canadaVideo,
+    videoURLs.phillippinesVideo,
+    videoURLs.americaVideo
   ];
 
   useEffect(() => {
