@@ -8,9 +8,9 @@ module.exports = {
         defaultGrey: 'rgb(141, 141, 141)',
         defaultBlack: '#000000',
         defaultRed: '#a1020a',
-        primaryBlue: '#48448c',
+        primaryBlue: '#1E488F',
         primaryCyan: '#26C6DA',
-        secondaryBlue: '#3182ce',
+        secondaryBlue: '#0892D0',
         
         // Sage green/teal colors from the image
         sage: {

@@ -5,6 +5,8 @@ import chinaVideo from '../Videos/chinaVid1.mp4';
 import canadaVideo from '../Videos/canadaVid1.mp4';
 import phillippinesVideo from '../Videos/philippinesVid1.mp4';
 import americaVideo from '../Videos/americaVid1.mp4';
+import Header from './Header';
+
 
 export default function TravelHero() {
   const [currentVideo, setCurrentVideo] = useState(0);
@@ -85,6 +87,11 @@ export default function TravelHero() {
       {/* Dark Overlay */}
       <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-40"></div>
 
+      {/* Header */}
+      <div className="relative z-20">
+        <Header />
+      </div>
+
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-end h-full pb-20 px-6">
         <h1 className="text-5xl md:text-7xl font-gilroyRegular text-white text-center mb-4 drop-shadow-2xl ">
@@ -95,9 +102,13 @@ export default function TravelHero() {
         </p>
         
         {/* Optional CTA Button */}
-        <button className="mt-8 px-8 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:bg-gray-100 transition-colors duration-300 shadow-lg">
-          Start Exploring
-        </button>
+        <a href="#explore" className="relative inline-block text-lg group mt-8 mb-8">
+          <span className="relative z-10 block px-8 py-3 overflow-hidden font-medium leading-tight text-white transition-all duration-300 ease-out border border-white rounded-lg group-hover:text-white group-hover:scale-105">
+            <span className="absolute inset-0 w-full h-full px-5 py-3 rounded-lg bg-transparent"></span>
+            <span className="absolute left-0 w-48 h-48 -ml-2 transition-all duration-300 origin-top-right -rotate-90 -translate-x-full translate-y-12 bg-gradient-to-r from-blue-600 to-blue-400 group-hover:-rotate-180 ease"></span>
+            <span className="relative">Start Exploring</span>
+          </span>
+        </a>
       </div>
 
       {/* Video Indicators */}
