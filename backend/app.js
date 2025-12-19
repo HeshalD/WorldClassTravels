@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
+import adminAuthRoutes from './routes/adminAuthRoutes.js';
+import visaRoutes from './routes/visaRoutes.js';
 
 dotenv.config({ path: './.env' });  
 
@@ -15,7 +17,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/auth/",authRoutes)
+app.use("/api/auth/", authRoutes);
+app.use("/api/admin/", adminAuthRoutes);
+app.use("/api/visas", visaRoutes);
 
 mongoose.connect(`${process.env.MONGODBURL}`)
   .then(() => console.log('Connected to MongoDB'))

@@ -4,6 +4,7 @@ import Header from "./Components/Header.jsx"
 import HeroSection from './Components/HeroSection.jsx';
 import TicketingSection from './Components/TicketingSection.jsx';
 import TravelSlider from './Components/TravelSlider.jsx';
+import Footer from './Components/Footer.jsx';
 
 function App() {
 
@@ -12,6 +13,7 @@ function App() {
         <HeroSection/>
         <TicketingSection/>
         <TravelSlider/>
+        <Footer/>
       </div>
   );
 }
