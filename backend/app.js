@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import adminAuthRoutes from './routes/adminAuthRoutes.js';
 import visaRoutes from './routes/visaRoutes.js';
+import ticketRoutes from './routes/ticketingRoutes.js';
 
 dotenv.config({ path: './.env' });  
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth/", authRoutes);
 app.use("/api/admin/", adminAuthRoutes);
 app.use("/api/visas", visaRoutes);
+app.use("/api/tickets", ticketRoutes);
 
 mongoose.connect(`${process.env.MONGODBURL}`)
   .then(() => console.log('Connected to MongoDB'))
