@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plane, Calendar, Users, Mail, MessageCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import Header from '../Components/Header';
 
 export default function TicketingForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -62,8 +63,15 @@ Passengers: ${formData.passengers}`;
   const isStep1Valid = formData.departureLocation && formData.arrivalLocation && formData.departureDate && (formData.tripType !== 'roundtrip' || formData.returnDate);
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
-      <div className="max-w-3xl mx-auto">
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${require('../Images/flying.jpg')})` }}
+    >
+      <div className="w-full">
+        <Header/>
+      </div>
+      
+      <div className="max-w-3xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
         {/* Progress Indicator */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">

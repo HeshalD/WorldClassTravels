@@ -13,7 +13,19 @@ export const AuthProvider = ({ children }) => {
         // Check if user is logged in on initial load
         const checkAuth = async () => {
             const token = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('user');
             
+            // If we have a stored user, use it immediately for better UX
+            if (storedUser) {
+                try {
+                    setUser(JSON.parse(storedUser));
+                } catch (e) {
+                    console.error('Error parsing stored user data', e);
+                    localStorage.removeItem('user');
+                }
+            }
+            
+            // Then verify the token and refresh user data in the background
             if (token) {
                 try {
                     const response = await authAPI.getMe();
@@ -21,21 +33,25 @@ export const AuthProvider = ({ children }) => {
                         const userData = response.data.data.user;
                         // Store user data in localStorage
                         const { id, firstName, lastName, email, phoneNumber } = userData;
-                        localStorage.setItem('user', JSON.stringify({
+                        const userToStore = {
                             id,
                             firstName,
                             lastName,
                             email,
                             phoneNumber
-                        }));
-                        setUser(userData);
+                        };
+                        localStorage.setItem('user', JSON.stringify(userToStore));
+                        setUser(userToStore);
                     } else {
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
+                        setUser(null);
                     }
                 } catch (error) {
                     console.error('Error checking auth:', error);
                     localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    setUser(null);
                 }
             }
             setLoading(false);

@@ -10,9 +10,9 @@ import AdminLogin from './Pages/Admin/AdminLogin';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import ProtectedRoute from './Components/Auth/ProtectedRoute';
 import Login from './Pages/Login';
-import TicketingForm from './Components/TicketingForm';
 import Register from './Pages/Register';
 import RegistrationOTPVerification from './Pages/RegistrationOTPVerification';
+import TicketingPage from './Pages/TicketingPage'
 
 // Protected Route component for regular users
 const ProtectedUserRoute = () => {
@@ -32,7 +32,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path='/' element={<LandingPage />} />
-          <Route path='/ticketing' element={<TicketingForm />} />
+          <Route path='/ticketing' element={<TicketingPage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register/>}/>
           <Route path='/verify-registration' element={<RegistrationOTPVerification/>}/>
