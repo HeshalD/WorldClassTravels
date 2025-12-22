@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { toast } from 'react-toastify';
 
 export default function RegistrationOTPVerification() {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -8,6 +9,7 @@ export default function RegistrationOTPVerification() {
     const [message, setMessage] = useState('');
     const [countdown, setCountdown] = useState(60);
     const [isResendDisabled, setIsResendDisabled] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const email = location.state?.email;
@@ -62,14 +64,32 @@ export default function RegistrationOTPVerification() {
         }
 
         try {
-            const response = await authAPI.verifyRegistrationOtp({ email, otp: otpCode });
-            if (response.data.success) {
-                // Store token and redirect to home
+            setIsSubmitting(true);
+            const response = await authAPI.verifyRegistrationOtp({ 
+                email, 
+                otp: otpCode 
+            });
+            
+            if (response.data && response.data.token) {
+                // Store token and user data
                 localStorage.setItem('token', response.data.token);
-                navigate('/');
+                
+                // Show success message
+                toast.success('Email verified successfully! Redirecting...');
+                
+                // Redirect to home after a short delay
+                setTimeout(() => {
+                    navigate('/');
+                }, 1500);
+            } else {
+                setError('Invalid response from server. Please try again.');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Verification failed. Please try again.');
+            const errorMessage = err.response?.data?.message || 'Verification failed. Please try again.';
+            setError(errorMessage);
+            toast.error(errorMessage);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -77,10 +97,21 @@ export default function RegistrationOTPVerification() {
         try {
             setMessage('Sending new OTP...');
             setError('');
-            await authAPI.resendRegistrationOtp({ email });
-            setMessage('A new OTP has been sent to your email');
-            setCountdown(60);
             setIsResendDisabled(true);
+            
+            // Call the resend OTP endpoint
+            const response = await authAPI.resendRegistrationOtp({ email });
+            
+            if (response.data && response.data.message) {
+                setMessage(response.data.message);
+                toast.success('New OTP sent successfully!');
+            } else {
+                setMessage('A new OTP has been sent to your email');
+                toast.success('New OTP sent successfully!');
+            }
+            
+            // Reset countdown
+            setCountdown(60);
             
             // Restart countdown
             const timer = setInterval(() => {
@@ -94,7 +125,10 @@ export default function RegistrationOTPVerification() {
                 });
             }, 1000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to resend OTP. Please try again.');
+            const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again.';
+            setError(errorMessage);
+            toast.error(errorMessage);
+            setIsResendDisabled(false);
         }
     };
 
@@ -104,14 +138,22 @@ export default function RegistrationOTPVerification() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-lg shadow-md">
+                <div className="text-center">
+                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                        <svg className="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h2 className="mt-3 text-2xl font-bold text-gray-900">
                         Verify Your Email
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        We've sent a verification code to {email}
+                    <p className="mt-2 text-sm text-gray-600">
+                        We've sent a verification code to <span className="font-medium">{email}</span>
                     </p>
+                    {message && (
+                        <p className="mt-2 text-sm text-green-600">{message}</p>
+                    )}
                 </div>
 
                 {error && (
@@ -154,7 +196,7 @@ export default function RegistrationOTPVerification() {
                                 value={data}
                                 onChange={(e) => handleOtpChange(e.target, index)}
                                 onKeyDown={(e) => handleKeyDown(e, index)}
-                                className="w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                className="w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondaryBlue focus:border-transparent"
                             />
                         ))}
                     </div>
@@ -162,9 +204,10 @@ export default function RegistrationOTPVerification() {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                            disabled={isSubmitting}
+                            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white ${isSubmitting ? 'bg-blue-400' : 'bg-primaryBlue hover:bg-secondaryBlue'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                         >
-                            Verify OTP
+                            {isSubmitting ? 'Verifying...' : 'Verify OTP'}
                         </button>
                     </div>
                 </form>
@@ -176,7 +219,7 @@ export default function RegistrationOTPVerification() {
                             type="button"
                             onClick={handleResendOtp}
                             disabled={isResendDisabled}
-                            className={`font-medium ${isResendDisabled ? 'text-gray-400' : 'text-teal-600 hover:text-teal-500'}`}
+                            className={`font-medium ${isResendDisabled ? 'text-gray-400' : 'text-primaryBlue hover:text-secondaryBlue'}`}
                         >
                             {isResendDisabled ? `Resend OTP (${countdown}s)` : 'Resend OTP'}
                         </button>

@@ -27,12 +27,12 @@ export default function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        
+
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             return;
         }
-        
+
         if (!acceptTerms) {
             setError('You must accept the terms and conditions');
             return;
@@ -41,19 +41,36 @@ export default function Register() {
         try {
             setIsSubmitting(true);
             const { confirmPassword, ...userData } = formData;
-            const response = await authAPI.register(userData);
-            
-            if (response.data.success) {
+
+            // Ensure we're sending the correct field names expected by the backend
+            const registrationData = {
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                email: userData.email,
+                password: userData.password,
+                phoneNumber: userData.phoneNumber || '' // Ensure phoneNumber is included, even if empty
+            };
+
+            console.log('Sending registration data:', registrationData); // For debugging
+
+            const response = await authAPI.register(registrationData);
+
+            if (response.data) {
                 // Redirect to OTP verification with email
-                navigate('/verify-registration', { 
-                    state: { 
+                navigate('/verify-registration', {
+                    state: {
                         email: formData.email,
                         message: 'Registration successful! Please verify your email.'
-                    } 
+                    }
                 });
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+            console.error('Registration error:', err); // Log the full error
+            const errorMessage = err.response?.data?.message ||
+                (err.response?.data?.errors ?
+                    err.response.data.errors.map(e => e.msg).join('. ') :
+                    'Registration failed. Please try again.');
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -178,7 +195,7 @@ export default function Register() {
                                         type="checkbox"
                                         checked={acceptTerms}
                                         onChange={(e) => setAcceptTerms(e.target.checked)}
-                                        className="h-4 w-4 text-teal-600 focus:ring-secondaryBlue border-gray-300 rounded"
+                                        className="h-4 w-4 text-primaryBlue focus:ring-secondaryBlue border-gray-300 rounded"
                                     />
                                 </div>
                                 <label htmlFor="acceptTerms" className="ml-2 block text-sm text-gray-700">
@@ -200,12 +217,12 @@ export default function Register() {
                                     </div>
                                 </div>
                             )}
-                            
+
                             {/* Submit Button */}
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isSubmitting ? 'bg-primaryBlue' : 'bg-primaryBlue hover:bg-secondaryBlue'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500`}
+                                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isSubmitting ? 'bg-primaryBlue' : 'bg-primaryBlue hover:bg-secondaryBlue'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primaryBlue`}
                             >
                                 {isSubmitting ? 'Creating Account...' : 'Create Account'}
                             </button>

@@ -43,8 +43,13 @@ export const authAPI = {
   getMe: () => api.get('/admin/me'),
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (userData) => api.post('/auth/register', userData),
-  verifyRegistrationOtp: (data) => api.post('/auth/verify-registration-otp', data),
-  resendRegistrationOtp: (data) => api.post('/auth/resend-registration-otp', data),
+  verifyRegistrationOtp: (data) => api.post('/auth/verify-otp', data),
+  resendRegistrationOtp: (data) => {
+    // For resend, we'll call the register endpoint again with the same email
+    // The backend will generate a new OTP and send it
+    const { email } = data;
+    return api.post('/auth/resend-otp', { email });
+  },
   getMe: () => api.get('/auth/me'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
