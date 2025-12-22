@@ -12,6 +12,7 @@ import ProtectedRoute from './Components/Auth/ProtectedRoute';
 import Login from './Pages/Login';
 import TicketingForm from './Components/TicketingForm';
 import Register from './Pages/Register';
+import RegistrationOTPVerification from './Pages/RegistrationOTPVerification';
 
 // Protected Route component for regular users
 const ProtectedUserRoute = () => {
@@ -34,6 +35,7 @@ function App() {
           <Route path='/ticketing' element={<TicketingForm />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register/>}/>
+          <Route path='/verify-registration' element={<RegistrationOTPVerification/>}/>
 
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
