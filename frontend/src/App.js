@@ -1,21 +1,40 @@
 import './App.css';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Pages
 import LandingPage from './Pages/LandingPage';
 import AdminLogin from './Pages/Admin/AdminLogin';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import ProtectedRoute from './Components/Auth/ProtectedRoute';
+import Login from './Pages/Login';
+import TicketingForm from './Components/TicketingForm';
+import Register from './Pages/Register';
+
+// Protected Route component for regular users
+const ProtectedUserRoute = () => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
+    <AuthProvider>
       <div className='w-full min-h-screen bg-gray-50'>
         <Routes>
           {/* Public Routes */}
           <Route path='/' element={<LandingPage />} />
-          
+          <Route path='/ticketing' element={<TicketingForm />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register/>}/>
+
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           
@@ -31,6 +50,12 @@ function App() {
           {/* Redirect any other /admin/* to login */}
           <Route path="/admin/*" element={<Navigate to="/admin/login" replace />} />
           
+          {/* Protected User Routes */}
+          <Route element={<ProtectedUserRoute />}>
+            <Route path="/dashboard" element={<div>User Dashboard</div>} />
+            {/* Add more protected user routes here */}
+          </Route>
+
           {/* 404 Route - redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -48,6 +73,7 @@ function App() {
           theme="light"
         />
       </div>
+    </AuthProvider>
   );
 }
 

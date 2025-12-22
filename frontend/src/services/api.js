@@ -11,7 +11,8 @@ const api = axios.create({
 // Add a request interceptor to add the auth token to requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('adminToken');
+    const adminToken = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers['x-auth-token'] = token;
     }
@@ -22,11 +23,32 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle 401 Unauthorized responses
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear token and redirect to login if token is invalid/expired
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth API
 export const authAPI = {
-  login: (email, password) => api.post('/admin/login', { email, password }),
-  logout: () => api.post('/admin/logout'),
+  adminLogin: (email, password) => api.post('/admin/login', { email, password }),
+  adminLogout: () => api.post('/admin/logout'),
   getMe: () => api.get('/admin/me'),
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (userData) => api.post('/auth/register', userData),
+  getMe: () => api.get('/auth/me'),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
+  updateProfile: (userData) => api.patch('/auth/update-account', userData),
+  verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
+  resendVerification: (email) => api.post('/auth/resend-verification', { email })
 };
 
 // Visa API

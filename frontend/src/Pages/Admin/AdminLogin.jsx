@@ -26,7 +26,7 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const { data } = await authAPI.login(email, password);
+      const { data } = await authAPI.adminLogin(email, password);
       
       if (data.success) {
         localStorage.setItem('adminToken', data.token);
