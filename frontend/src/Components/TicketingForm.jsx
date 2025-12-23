@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { Plane, Calendar, Users, Mail, MessageCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import React, { useState, useContext } from 'react';
+import { Plane, Calendar, Users, Mail, MessageCircle, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
 import Header from '../Components/Header';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 export default function TicketingForm() {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    tripType: 'roundtrip',
+    tripType: 'round-trip',
     departureLocation: '',
     arrivalLocation: '',
     departureDate: '',
@@ -15,9 +21,9 @@ export default function TicketingForm() {
   });
 
   const tripTypes = [
-    { value: 'oneway', label: 'One Way' },
-    { value: 'roundtrip', label: 'Round Trip' },
-    { value: 'multicity', label: 'Multi City' }
+    { value: 'one-way', label: 'One Way' },
+    { value: 'round-trip', label: 'Round Trip' },
+    { value: 'multi-city', label: 'Multi City' }
   ];
 
   const cabinTypes = [
@@ -43,34 +49,115 @@ export default function TicketingForm() {
     setCurrentStep(1);
   };
 
-  const handleSubmit = (method) => {
-    const message = `Flight Booking Details:
+  const handleSubmit = async (method) => {
+    if (!user) {
+      toast.error('Please login to book tickets');
+      return;
+    }
+
+    // Get phone number from localStorage if not available in user object
+    const userPhoneNumber = user.phoneNumber || localStorage.getItem('phoneNumber');
+
+    // Validate phone number format if provided
+    if (userPhoneNumber && !/^[0-9]{10,15}$/.test(userPhoneNumber)) {
+      toast.error('Please enter a valid phone number (10-15 digits)');
+      return;
+    }
+
+    if (method === 'api') {
+      try {
+        setIsSubmitting(true);
+        const token = localStorage.getItem('token');
+
+        // Check if phone number is required but not provided
+        if (!userPhoneNumber) {
+          toast.error('Phone number is required for booking');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const ticketData = {
+          userID: user.id,
+          userFirstName: user.firstName,
+          userLastName: user.lastName,
+          userEmail: user.email,
+          userPhoneNumber: userPhoneNumber, // Using the phone number from localStorage or user object
+          tripType: formData.tripType,
+          departureLocation: formData.departureLocation,
+          arrivalLocation: formData.arrivalLocation,
+          departureDate: formData.departureDate,
+          returnDate: formData.tripType === 'round-trip' ? formData.returnDate : null,
+          cabinType: formData.cabinType,
+          passengers: formData.passengers
+        };
+
+        const response = await axios.post('http://localhost:5000/api/tickets', ticketData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.data) {
+          toast.success('Ticket request submitted successfully!');
+          // Reset form or redirect to success page
+          setCurrentStep(3);
+        }
+      } catch (error) {
+        console.error('Error submitting ticket:', error);
+        // Show more detailed error message from server
+        const errorMessage = error.response?.data?.errors?.[0]?.msg || 
+                           error.response?.data?.message || 
+                           'Failed to submit ticket request. Please check your details and try again.';
+        toast.error(errorMessage);
+        console.error('Error details:', error.response?.data);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      // Fallback to email/whatsapp if needed
+      const message = `
+Customer Details: 
+=======================================================
+Name: ${user.firstName} ${user.lastName}
+Email: ${user.email}
+Phone Number: ${user.phoneNumber}
+=======================================================
+      
+Flight Booking Details:
+=======================================================
 Trip Type: ${formData.tripType}
 From: ${formData.departureLocation}
 To: ${formData.arrivalLocation}
 Departure: ${formData.departureDate}
-Return: ${formData.returnDate}
+${formData.returnDate ? `Return: ${formData.returnDate}\n` : ''}
 Cabin: ${formData.cabinType}
-Passengers: ${formData.passengers}`;
+Passengers: ${formData.passengers}
+=======================================================`;
 
-    if (method === 'email') {
-      window.location.href = `mailto:?subject=Flight Booking Request&body=${encodeURIComponent(message)}`;
-    } else if (method === 'whatsapp') {
-      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+      if (method === 'email') {
+        window.location.href = `mailto:?subject=Flight Booking Request&body=${encodeURIComponent(message)}`;
+      } else if (method === 'whatsapp') {
+        window.open(`https://wa.me/94706904865?text=${encodeURIComponent(message)}`, '_blank');
+      }
     }
   };
 
-  const isStep1Valid = formData.departureLocation && formData.arrivalLocation && formData.departureDate && (formData.tripType !== 'roundtrip' || formData.returnDate);
+  const isStep1Valid = formData.departureLocation &&
+    formData.arrivalLocation &&
+    formData.departureDate &&
+    (formData.tripType !== 'round-trip' || formData.returnDate) &&
+    formData.departureLocation !== formData.arrivalLocation;
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${require('../Images/flying.jpg')})` }}
     >
       <div className="w-full">
-        <Header/>
+        <Header />
       </div>
-      
+
       <div className="max-w-3xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
         {/* Progress Indicator */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -78,23 +165,20 @@ Passengers: ${formData.passengers}`;
             {[1, 2, 3].map((step) => (
               <React.Fragment key={step}>
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-gilroyMedium transition-all ${
-                    currentStep > step ? 'bg-green-500 text-white' :
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-gilroyMedium transition-all ${currentStep > step ? 'bg-green-500 text-white' :
                     currentStep === step ? 'border border-primaryBlue text-primaryBlue' :
-                    'bg-gray-200 text-gray-500'
-                  }`}>
+                      'bg-gray-200 text-gray-500'
+                    }`}>
                     {currentStep > step ? <Check size={20} /> : step}
                   </div>
-                  <span className={`mt-2 text-xs sm:text-sm font-gilroyRegular ${
-                    currentStep >= step ? 'text-black' : 'text-gray-400'
-                  }`}>
+                  <span className={`mt-2 text-xs sm:text-sm font-gilroyRegular ${currentStep >= step ? 'text-black' : 'text-gray-400'
+                    }`}>
                     {step === 1 ? 'Details' : step === 2 ? 'Review' : 'Submit'}
                   </span>
                 </div>
                 {step < 3 && (
-                  <div className={`flex-1 h-1 mx-2 rounded ${
-                    currentStep > step ? 'bg-green-500' : 'bg-gray-200'
-                  }`} />
+                  <div className={`flex-1 h-1 mx-2 rounded ${currentStep > step ? 'bg-green-500' : 'bg-gray-200'
+                    }`} />
                 )}
               </React.Fragment>
             ))}
@@ -119,11 +203,10 @@ Passengers: ${formData.passengers}`;
                     <button
                       key={type.value}
                       onClick={() => handleInputChange('tripType', type.value)}
-                      className={`p-3 rounded-lg border-2 font-medium transition-all ${
-                        formData.tripType === type.value
-                          ? 'border-blue-600 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white'
-                          : 'border-gray-200 hover:border-primaryBlue'
-                      }`}
+                      className={`p-3 rounded-lg border-2 font-medium transition-all ${formData.tripType === type.value
+                        ? 'border-blue-600 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white'
+                        : 'border-gray-200 hover:border-primaryBlue'
+                        }`}
                     >
                       {type.label}
                     </button>
@@ -166,7 +249,7 @@ Passengers: ${formData.passengers}`;
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primaryBlue focus:border-transparent"
                   />
                 </div>
-                {formData.tripType === 'roundtrip' && (
+                {formData.tripType === 'round-trip' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Return Date</label>
                     <input
@@ -187,11 +270,10 @@ Passengers: ${formData.passengers}`;
                     <button
                       key={cabin.value}
                       onClick={() => handleInputChange('cabinType', cabin.value)}
-                      className={`p-3 rounded-lg border-2 font-medium transition-all text-sm ${
-                        formData.cabinType === cabin.value
-                          ? 'border-blue-600 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white'
-                          : 'border-gray-200 hover:border-primaryBlue'
-                      }`}
+                      className={`p-3 rounded-lg border-2 font-medium transition-all text-sm ${formData.cabinType === cabin.value
+                        ? 'border-blue-600 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white'
+                        : 'border-gray-200 hover:border-primaryBlue'
+                        }`}
                     >
                       {cabin.label}
                     </button>
@@ -222,10 +304,20 @@ Passengers: ${formData.passengers}`;
 
               <button
                 onClick={handleNext}
-                disabled={!isStep1Valid}
-                className="w-full mt-6 py-3 bg-primaryBlue text-white rounded-lg font-gilroyRegular hover:bg-secondaryBlue transition-all duration-300 transform hover:scale-[1.02] disabled:bg-gradient-to-t from-gray-400 to-gray-200 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={!isStep1Valid || isSubmitting}
+                className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${isStep1Valid && !isSubmitting
+                  ? 'bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white hover:opacity-90'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
               >
-                Continue to Review <ChevronRight size={20} />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin h-5 w-5" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Continue'
+                )}
               </button>
             </div>
           )}
@@ -234,7 +326,7 @@ Passengers: ${formData.passengers}`;
           {currentStep === 2 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-gilroyMedium text-gray-800 mb-6">Review Your Booking</h2>
-              
+
               <div className="bg-gray-50 rounded-lg p-6 space-y-4">
                 <div className="flex justify-between items-center pb-3 border-b">
                   <span className="text-gray-600">Trip Type</span>
@@ -248,7 +340,7 @@ Passengers: ${formData.passengers}`;
                   <span className="text-gray-600">Departure</span>
                   <span className="font-gilroyMedium">{formData.departureDate}</span>
                 </div>
-                {formData.tripType === 'roundtrip' && (
+                {formData.tripType === 'round-trip' && (
                   <div className="flex justify-between items-center pb-3 border-b">
                     <span className="text-gray-600">Return</span>
                     <span className="font-gilroyMedium">{formData.returnDate}</span>
@@ -267,7 +359,7 @@ Passengers: ${formData.passengers}`;
               <div className="flex gap-3">
                 <button
                   onClick={handleBack}
-                  className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-gilroyMedium hover:bg-gray-30 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-gilroyMedium hover:bg-gray-300 flex items-center justify-center gap-2"
                 >
                   <ChevronLeft size={20} /> Back
                 </button>
@@ -291,7 +383,7 @@ Passengers: ${formData.passengers}`;
           {currentStep === 3 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-gilroyMedium text-gray-800 mb-6">Submit Your Booking</h2>
-              
+
               <p className="text-gray-600 mb-6">Choose how you'd like to submit your booking details:</p>
 
               <div className="grid sm:grid-cols-2 gap-4">
@@ -312,7 +404,25 @@ Passengers: ${formData.passengers}`;
                   <h3 className="font-gilroyMedium text-lg mb-2">WhatsApp</h3>
                   <p className="text-sm text-gray-600">Share booking via WhatsApp</p>
                 </button>
+
               </div>
+              <button
+                onClick={() => handleSubmit('api')}
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 p-3 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin h-5 w-5" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Plane size={18} />
+                    {user ? 'Submit Booking Request' : 'Login to Book'}
+                  </>
+                )}
+              </button>
 
               <button
                 onClick={handleBack}

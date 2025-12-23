@@ -11,48 +11,25 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Check if user is logged in on initial load
-        const checkAuth = async () => {
+        const checkAuth = () => {
             const token = localStorage.getItem('token');
             const storedUser = localStorage.getItem('user');
             
-            // If we have a stored user, use it immediately for better UX
-            if (storedUser) {
+            // If we have a stored user and token, use the stored data
+            if (storedUser && token) {
                 try {
                     setUser(JSON.parse(storedUser));
                 } catch (e) {
                     console.error('Error parsing stored user data', e);
                     localStorage.removeItem('user');
-                }
-            }
-            
-            // Then verify the token and refresh user data in the background
-            if (token) {
-                try {
-                    const response = await authAPI.getMe();
-                    if (response.data.status === 'success') {
-                        const userData = response.data.data.user;
-                        // Store user data in localStorage
-                        const { id, firstName, lastName, email, phoneNumber } = userData;
-                        const userToStore = {
-                            id,
-                            firstName,
-                            lastName,
-                            email,
-                            phoneNumber
-                        };
-                        localStorage.setItem('user', JSON.stringify(userToStore));
-                        setUser(userToStore);
-                    } else {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        setUser(null);
-                    }
-                } catch (error) {
-                    console.error('Error checking auth:', error);
                     localStorage.removeItem('token');
-                    localStorage.removeItem('user');
                     setUser(null);
                 }
+            } else {
+                // If no token or no user data, ensure we're logged out
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setUser(null);
             }
             setLoading(false);
         };
@@ -61,16 +38,22 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (userData) => {
-        // Store user data in localStorage
+        // Store token and user data in localStorage
+        if (userData.token) {
+            localStorage.setItem('token', userData.token);
+        }
+        
         const { id, firstName, lastName, email, phoneNumber } = userData;
-        localStorage.setItem('user', JSON.stringify({
+        const userToStore = {
             id,
             firstName,
             lastName,
             email,
             phoneNumber
-        }));
-        setUser(userData);
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userToStore));
+        setUser(userToStore);
     };
 
     const logout = () => {

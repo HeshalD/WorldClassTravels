@@ -40,7 +40,6 @@ api.interceptors.response.use(
 export const authAPI = {
   adminLogin: (email, password) => api.post('/admin/login', { email, password }),
   adminLogout: () => api.post('/admin/logout'),
-  getMe: () => api.get('/admin/me'),
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (userData) => api.post('/auth/register', userData),
   verifyRegistrationOtp: (data) => api.post('/auth/verify-otp', data),
@@ -50,7 +49,6 @@ export const authAPI = {
     const { email } = data;
     return api.post('/auth/resend-otp', { email });
   },
-  getMe: () => api.get('/auth/me'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
   updateProfile: (userData) => api.patch('/auth/update-account', userData),
