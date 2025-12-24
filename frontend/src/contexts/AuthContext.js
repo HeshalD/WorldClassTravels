@@ -43,9 +43,9 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', userData.token);
         }
         
-        const { id, firstName, lastName, email, phoneNumber } = userData;
+        const { _id, firstName, lastName, email, phoneNumber } = userData;
         const userToStore = {
-            id,
+            _id,
             firstName,
             lastName,
             email,

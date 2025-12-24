@@ -38,7 +38,7 @@ export default function Login() {
             if (response.data.status === 'success') {
                 const { token, data: { user } } = response.data;
                 
-                // Store token in localStorage
+                // Store token and user ID in localStorage
                 localStorage.setItem('token', token);
                 
                 // Store user data in context

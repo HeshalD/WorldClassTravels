@@ -77,7 +77,7 @@ export default function TicketingForm() {
         }
 
         const ticketData = {
-          userID: user.id,
+          userID: user._id,
           userFirstName: user.firstName,
           userLastName: user.lastName,
           userEmail: user.email,
@@ -90,6 +90,13 @@ export default function TicketingForm() {
           cabinType: formData.cabinType,
           passengers: formData.passengers
         };
+
+        // Validate that we have a user ID
+        if (!ticketData.userID) {
+          toast.error('User ID is missing. Please log in again.');
+          setIsSubmitting(false);
+          return;
+        }
 
         const response = await axios.post('http://localhost:5000/api/tickets', ticketData, {
           headers: {
