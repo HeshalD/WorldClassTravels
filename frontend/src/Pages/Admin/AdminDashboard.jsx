@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { visaAPI, ticketAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,6 +14,7 @@ const AdminDashboard = () => {
   const [visas, setVisas] = useState([]);
   const [tickets, setTickets] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Load data when component mounts and when activeTab changes
   useEffect(() => {
@@ -145,21 +146,29 @@ const AdminDashboard = () => {
       <div className="py-10">
         <main>
           <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-              </div>
-            ) : activeTab === 'visas' ? (
-              <VisaList 
-                visas={visas} 
-                onDelete={handleVisaDelete} 
-                onUpdate={loadData} 
-              />
-            ) : (
-              <TicketList 
-                tickets={tickets} 
-                onUpdateStatus={handleTicketUpdate} 
-              />
+            {/* Render the nested routes */}
+            <Outlet />
+            
+            {/* Only show the tab content if no nested route is active */}
+            {!location.pathname.includes('/admin/visas/new') && (
+              <>
+                {loading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                  </div>
+                ) : activeTab === 'visas' ? (
+                  <VisaList 
+                    visas={visas} 
+                    onDelete={handleVisaDelete} 
+                    onUpdate={loadData} 
+                  />
+                ) : (
+                  <TicketList 
+                    tickets={tickets} 
+                    onUpdateStatus={handleTicketUpdate} 
+                  />
+                )}
+              </>
             )}
           </div>
         </main>

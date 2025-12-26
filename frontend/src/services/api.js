@@ -11,11 +11,16 @@ const api = axios.create({
 // Add a request interceptor to add the auth token to requests
 api.interceptors.request.use(
   (config) => {
+    const isAdminRoute = config.url.startsWith('/admin/');
     const adminToken = localStorage.getItem('adminToken');
     const token = localStorage.getItem('token');
-    if (token) {
+    
+    if (isAdminRoute && adminToken) {
+      config.headers['x-auth-token'] = adminToken;
+    } else if (token) {
       config.headers['x-auth-token'] = token;
     }
+    
     return config;
   },
   (error) => {
@@ -28,9 +33,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login if token is invalid/expired
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      const isAdminRoute = error.config.url.includes('/admin/');
+      // Only redirect if it's not an admin route
+      if (!isAdminRoute) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -40,6 +48,7 @@ api.interceptors.response.use(
 export const authAPI = {
   adminLogin: (email, password) => api.post('/admin/login', { email, password }),
   adminLogout: () => api.post('/admin/logout'),
+  getMe: () => api.get('/admin/me'),
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (userData) => api.post('/auth/register', userData),
   verifyRegistrationOtp: (data) => api.post('/auth/verify-otp', data),
@@ -57,12 +66,21 @@ export const authAPI = {
 };
 
 // Visa API
+// Update the visaAPI object in api.js
 export const visaAPI = {
-  getAll: () => api.get('/visas'),
-  getById: (id) => api.get(`/visas/${id}`),
-  create: (visaData) => api.post('/visas', visaData),
-  update: (id, visaData) => api.put(`/visas/${id}`, visaData),
-  delete: (id) => api.delete(`/visas/${id}`),
+    getAll: () => api.get('/visas'),
+    getById: (id) => api.get(`/visas/${id}`),
+    create: (data) => api.post('/visas', data, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }),
+    update: (id, data) => api.put(`/visas/${id}`, data, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }),
+    delete: (id) => api.delete(`/visas/${id}`)
 };
 
 // Ticket API

@@ -26,6 +26,11 @@ const visaSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Cover image is required'],
         trim: true
+    },
+    imagePath: {
+        type: String,
+        required: [true, 'Image path is required'],
+        trim: true
     }
 }, {
     timestamps: true

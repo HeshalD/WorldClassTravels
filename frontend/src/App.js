@@ -12,7 +12,8 @@ import ProtectedRoute from './Components/Auth/ProtectedRoute';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
 import RegistrationOTPVerification from './Pages/RegistrationOTPVerification';
-import TicketingPage from './Pages/TicketingPage'
+import TicketingPage from './Pages/TicketingPage';
+{/*import AddNewVisa from './Components/Admin/AddNewVisa';*/}
 
 // Protected Route component for regular users
 const ProtectedUserRoute = () => {
@@ -40,14 +41,21 @@ function App() {
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute adminOnly={true}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/admin" element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<div>Dashboard Content</div>} />
+            <Route path="visas">
+              {/*<Route path="new" element={
+                <ProtectedRoute adminOnly={true}>
+                  <AddNewVisa />
+                </ProtectedRoute>
+              } />*/}
+            </Route>
+          </Route>
           
           {/* Redirect any other /admin/* to login */}
           <Route path="/admin/*" element={<Navigate to="/admin/login" replace />} />
