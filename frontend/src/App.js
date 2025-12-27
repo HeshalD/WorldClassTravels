@@ -13,7 +13,8 @@ import Login from './Pages/Login';
 import Register from './Pages/Register';
 import RegistrationOTPVerification from './Pages/RegistrationOTPVerification';
 import TicketingPage from './Pages/TicketingPage';
-import VisaSelect from './Components/VisaSelect';
+import SelectVisaPage from './Pages/SelectVisaPage';
+import VisaPage from './Pages/VisaPage';
 {/*import AddNewVisa from './Components/Admin/AddNewVisa';*/}
 
 // Protected Route component for regular users
@@ -38,7 +39,8 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register/>}/>
           <Route path='/verify-registration' element={<RegistrationOTPVerification/>}/>
-          <Route path='/visa-select' element={<VisaSelect/>}/>
+          <Route path='/visa-select' element={<SelectVisaPage/>}/>
+          <Route path='/visa-page' element={<VisaPage/>}/>
 
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
