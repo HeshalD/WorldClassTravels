@@ -25,12 +25,6 @@ router.post('/', protect, isAdmin, uploadVisaImage, [
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        // Remove the uploaded file if validation fails
-        if (req.file) {
-            fs.unlink(path.join(__dirname, '../', req.file.path), (err) => {
-                if (err) console.error('Error deleting file:', err);
-            });
-        }
         return res.status(400).json({ success: false, errors: errors.array() });
     }
 
@@ -40,12 +34,6 @@ router.post('/', protect, isAdmin, uploadVisaImage, [
         // Check if visa for this country already exists
         const existingVisa = await Visa.findOne({ country });
         if (existingVisa) {
-            // Remove the uploaded file if visa already exists
-            if (req.file) {
-                fs.unlink(path.join(__dirname, '../', req.file.path), (err) => {
-                    if (err) console.error('Error deleting file:', err);
-                });
-            }
             return res.status(400).json({
                 success: false,
                 message: 'Visa for this country already exists'
@@ -57,21 +45,24 @@ router.post('/', protect, isAdmin, uploadVisaImage, [
             duration,
             price,
             description,
-            coverImage: req.body.coverImage,
-            imagePath: req.body.imagePath
+            coverImage: req.file?.path, // Cloudinary URL
+            imagePath: req.file?.filename // Cloudinary public_id
         });
 
-        const savedVisa = await newVisa.save();
-        res.status(201).json({ success: true, data: savedVisa });
+        await newVisa.save();
+        
+        res.status(201).json({
+            success: true,
+            data: newVisa
+        });
+
     } catch (error) {
-        // Remove the uploaded file if there's an error
-        if (req.file) {
-            fs.unlink(path.join(__dirname, '../', req.file.path), (err) => {
-                if (err) console.error('Error deleting file:', err);
-            });
-        }
         console.error('Error creating visa:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
     }
 });
 
