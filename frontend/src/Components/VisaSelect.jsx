@@ -111,6 +111,7 @@ const VisaSelect = () => {
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent transition-opacity duration-300 group-hover:from-black/80">
                                                 <div className="absolute bottom-0 left-0 right-0 p-4 transform transition-transform duration-300 group-hover:translate-y-0">
                                                     <h3 className="text-white text-xl font-gilroyRegular">{visa.country}</h3>
+                                                    <h3 className="text-white/80 text-md font-gilroyRegular">Rs.{visa.price}/=</h3>
                                                     <p className="text-white/80 text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                         Click to view details
                                                     </p>
