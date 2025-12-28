@@ -17,24 +17,24 @@ export default function Header() {
 
           {/* Navigation Options */}
           <nav className="flex space-x-36 flex-1 justify-center uppercase">
-            <a
-              href="#home"
+            <Link
+              to="/"
               className="text-white hover:text-blue-600 transition-colors duration-200 font-medium"
             >
               Home
-            </a>
+            </Link>
             <a
               href="/ticketing"
               className="text-white hover:text-blue-600 transition-colors duration-200 font-medium"
             >
               Ticketing
             </a>
-            <a
-              href="#travevisa"
+            <Link
+              to="/visa-select"
               className="text-white hover:text-blue-600 transition-colors duration-200 font-medium"
             >
               Travel Visa
-            </a>
+            </Link>
             <a
               href="#tours"
               className="text-white hover:text-blue-600 transition-colors duration-200 font-medium"

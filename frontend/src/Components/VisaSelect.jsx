@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { visaAPI } from '../services/api';
 import Header from './Header';
 
 const VisaSelect = () => {
+    const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -59,6 +61,11 @@ const VisaSelect = () => {
         setCurrentPage(0); // Reset to first page on search
     };
 
+    const handleVisaClick = (visa) => {
+        // Navigate to visa page with visa data
+        navigate('/visa-page', { state: { visa } });
+    };
+
     return (
         <div className="relative min-h-screen">
             <div 
@@ -102,6 +109,7 @@ const VisaSelect = () => {
                                         <div
                                             key={visa._id}
                                             className="group relative h-64 rounded-xl overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                                            onClick={() => handleVisaClick(visa)}
                                         >
                                             <img
                                                 src={visa.coverImage || 'https://via.placeholder.com/300x200?text=No+Image'}
