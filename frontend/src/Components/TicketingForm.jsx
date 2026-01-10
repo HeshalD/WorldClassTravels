@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Plane, Calendar, Users, Mail, MessageCircle, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
+import { Plane, Calendar, Users, Mail, MessageCircle, ChevronLeft, ChevronRight, Check, Loader2, RefreshCw, MapPin} from 'lucide-react';
 import Header from '../Components/Header';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
@@ -113,9 +113,9 @@ export default function TicketingForm() {
       } catch (error) {
         console.error('Error submitting ticket:', error);
         // Show more detailed error message from server
-        const errorMessage = error.response?.data?.errors?.[0]?.msg || 
-                           error.response?.data?.message || 
-                           'Failed to submit ticket request. Please check your details and try again.';
+        const errorMessage = error.response?.data?.errors?.[0]?.msg ||
+          error.response?.data?.message ||
+          'Failed to submit ticket request. Please check your details and try again.';
         toast.error(errorMessage);
         console.error('Error details:', error.response?.data);
       } finally {
@@ -165,44 +165,53 @@ Passengers: ${formData.passengers}
         <Header />
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
-        {/* Progress Indicator */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3].map((step) => (
-              <React.Fragment key={step}>
-                <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-gilroyMedium transition-all ${currentStep > step ? 'bg-green-500 text-white' :
-                    currentStep === step ? 'border border-primaryBlue text-primaryBlue' :
-                      'bg-gray-200 text-gray-500'
-                    }`}>
-                    {currentStep > step ? <Check size={20} /> : step}
-                  </div>
-                  <span className={`mt-2 text-xs sm:text-sm font-gilroyRegular ${currentStep >= step ? 'text-black' : 'text-gray-400'
-                    }`}>
-                    {step === 1 ? 'Details' : step === 2 ? 'Review' : 'Submit'}
-                  </span>
-                </div>
-                {step < 3 && (
-                  <div className={`flex-1 h-1 mx-2 rounded ${currentStep > step ? 'bg-green-500' : 'bg-gray-200'
-                    }`} />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
+
 
         {/* Step Content */}
         <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8">
+          {/* Progress Indicator */}
+          <div className="bg-transparent max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              {[1, 2, 3].map((step) => (
+                <React.Fragment key={step}>
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-gilroyMedium transition-all ${currentStep > step ?
+                        (step === 1 ? 'bg-primaryCyan text-white' :
+                          step === 2 ? 'bg-secondaryBlue text-white' :
+                            'bg-primaryBlue text-white') :
+                        currentStep === step ? (step === 3 ? 'bg-primaryBlue text-white' : step === 2 ? 'bg-secondaryBlue text-white' : 'bg-[#26C6DA] text-white') :
+                          'bg-gray-200 text-gray-500'
+                      }`}>
+                      {step}
+                    </div>
+                    <span className={`mt-2 text-xs sm:text-[12px] font-gilroyRegular transition-all ${currentStep > step ?
+                        (step === 1 ? 'text-primaryCyan' :
+                          step === 2 ? 'text-secondayBlue' :
+                            'text-green-500') :
+                        currentStep === step ? (step === 3 ? 'text-primaryBlue' : step === 2 ? 'text-secondaryBlue' : 'text-[#26C6DA]') :
+                          'text-gray-400'
+                      }`}>
+                      {step === 1 ? 'Details' : step === 2 ? 'Review' : 'Submit'}
+                    </span>
+                  </div>
+                  {step < 3 && (
+                    <div className={`flex-1 h-1 mx-2 rounded ${currentStep > step ?
+                      (step === 1 ? 'bg-gradient-to-r from-[#26C6DA] to-[#0892D0]' : 'bg-gradient-to-r from-[#0892D0] to-[#1E488F]') : 'bg-gray-200'
+                      }`} />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
           {/* Step 1: Input Details */}
           {currentStep === 1 && (
             <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Plane className="text-primaryBlue" size={28} />
-                <h2 className="text-2xl font-gilroyMedium text-gray-800">Flight Details</h2>
+              <div className="flex items-center gap-3 mb-6 justify-center">
+                <h3 className="text-md font-gilroyMedium text-gray-800">Step 1 of 3 : Provide your flight details</h3>
               </div>
 
-              {/* Trip Type */}
+              {/* Trip Type 
               <div>
                 <label className="block text-sm font-gilroyRegular text-gray-700 mb-2">Trip Type</label>
                 <div className="grid grid-cols-3 gap-3">
@@ -219,30 +228,62 @@ Passengers: ${formData.passengers}
                     </button>
                   ))}
                 </div>
+              </div>*/}
+              <div className="flex rounded-full max-w-2xl mx-auto bg-transparent border border-primaryBlue p-1">
+                {tripTypes.map(type => (
+                  <button
+                    key={type.value}
+                    onClick={() => handleInputChange('tripType', type.value)}
+                    className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${formData.tripType === type.value
+                        ? 'bg-primaryBlue text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
               </div>
 
               {/* Locations */}
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 relative">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
-                  <input
-                    type="text"
-                    value={formData.departureLocation}
-                    onChange={(e) => handleInputChange('departureLocation', e.target.value)}
-                    placeholder="Departure city"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primaryBlue focus:border-transparent"
-                  />
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      value={formData.departureLocation}
+                      onChange={(e) => handleInputChange('departureLocation', e.target.value)}
+                      placeholder="Departure City"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg "
+                    />
+                  </div>
                 </div>
+                <button
+                  onClick={() => {
+                    const temp = formData.departureLocation;
+                    handleInputChange('departureLocation', formData.arrivalLocation);
+                    handleInputChange('arrivalLocation', temp);
+                  }}
+                  className="absolute left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 bg-white border-2 border-gray-300 rounded-full p-2 hover:bg-gray-50 transition-all z-10 shadow-md"
+                  title="Swap locations"
+                >
+                  <RefreshCw size={16} className="text-gray-600" />
+                </button>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">To</label>
-                  <input
-                    type="text"
-                    value={formData.arrivalLocation}
-                    onChange={(e) => handleInputChange('arrivalLocation', e.target.value)}
-                    placeholder="Arrival city"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primaryBlue focus:border-transparent"
-                  />
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      value={formData.arrivalLocation}
+                      onChange={(e) => handleInputChange('arrivalLocation', e.target.value)}
+                      placeholder="Arrival City"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg "
+                    />
+                  </div>
                 </div>
+
               </div>
 
               {/* Dates */}
@@ -253,7 +294,7 @@ Passengers: ${formData.passengers}
                     type="date"
                     value={formData.departureDate}
                     onChange={(e) => handleInputChange('departureDate', e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primaryBlue focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 rounded-lg  "
                   />
                 </div>
                 {formData.tripType === 'round-trip' && (
@@ -263,29 +304,26 @@ Passengers: ${formData.passengers}
                       type="date"
                       value={formData.returnDate}
                       onChange={(e) => handleInputChange('returnDate', e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primaryBlue focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 rounded-lg  "
                     />
                   </div>
                 )}
               </div>
 
               {/* Cabin Type */}
-              <div>
+              <div className='max-w-xs'>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Cabin Type</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <select
+                  value={formData.cabinType}
+                  onChange={(e) => handleInputChange('cabinType', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
                   {cabinTypes.map(cabin => (
-                    <button
-                      key={cabin.value}
-                      onClick={() => handleInputChange('cabinType', cabin.value)}
-                      className={`p-3 rounded-lg border-2 font-medium transition-all text-sm ${formData.cabinType === cabin.value
-                        ? 'border-blue-600 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white'
-                        : 'border-gray-200 hover:border-primaryBlue'
-                        }`}
-                    >
+                    <option key={cabin.value} value={cabin.value}>
                       {cabin.label}
-                    </button>
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
 
               {/* Passengers */}
@@ -312,8 +350,8 @@ Passengers: ${formData.passengers}
               <button
                 onClick={handleNext}
                 disabled={!isStep1Valid || isSubmitting}
-                className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${isStep1Valid && !isSubmitting
-                  ? 'bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white hover:opacity-90'
+                className={`px-8 py-2 rounded-full font-medium transition-all flex items-center justify-center gap-2 ${isStep1Valid && !isSubmitting
+                  ? 'bg-primaryBlue text-white hover:opacity-90'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
               >
@@ -332,7 +370,9 @@ Passengers: ${formData.passengers}
           {/* Step 2: Review */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-gilroyMedium text-gray-800 mb-6">Review Your Booking</h2>
+              <div className="flex items-center gap-3 mb-6 justify-center">
+                <h3 className="text-md font-gilroyMedium text-gray-800">Step 2 of 3 : Please confirm your ticket details</h3>
+              </div>
 
               <div className="bg-gray-50 rounded-lg p-6 space-y-4">
                 <div className="flex justify-between items-center pb-3 border-b">
@@ -363,22 +403,22 @@ Passengers: ${formData.passengers}
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-5">
                 <button
                   onClick={handleBack}
-                  className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-gilroyMedium hover:bg-gray-300 flex items-center justify-center gap-2"
+                  className="flex-1 py-2 bg-gray-200 text-gray-700 rounded-lg font-gilroyMedium hover:bg-gray-300 flex items-center justify-center gap-2"
                 >
                   <ChevronLeft size={20} /> Back
                 </button>
                 <button
                   onClick={handleEdit}
-                  className="flex-1 py-3 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white rounded-lg font-gilroyRegular hover:bg-secondaryBlue transition-all duration-300 transform hover:scale-[1.02]"
+                  className="flex-1 py-2 bg-primaryBlue text-white rounded-lg font-gilroyRegular hover:bg-secondaryBlue transition-all duration-300 transform hover:scale-[1.02]"
                 >
                   Edit Details
                 </button>
                 <button
                   onClick={handleNext}
-                  className="flex-1 py-3 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white rounded-lg font-gilroyRegular hover:bg-secondaryBlue transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                  className="flex-1 py-2 bg-primaryBlue from-primaryBlue to-secondaryBlue text-white rounded-lg font-gilroyRegular hover:bg-secondaryBlue transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center gap-2"
                 >
                   Continue <ChevronRight size={20} />
                 </button>
@@ -389,9 +429,9 @@ Passengers: ${formData.passengers}
           {/* Step 3: Submit */}
           {currentStep === 3 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-gilroyMedium text-gray-800 mb-6">Submit Your Booking</h2>
-
-              <p className="text-gray-600 mb-6">Choose how you'd like to submit your booking details:</p>
+              <div className="flex items-center gap-3 mb-6 justify-center">
+                <h3 className="text-md font-gilroyMedium text-gray-800">Step 3 of 3 : Choose how you'd like to submit your booking details</h3>
+              </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <button
@@ -416,7 +456,7 @@ Passengers: ${formData.passengers}
               <button
                 onClick={() => handleSubmit('api')}
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 p-3 bg-gradient-to-t from-primaryBlue to-secondaryBlue text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 p-3 bg-primaryBlue text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
