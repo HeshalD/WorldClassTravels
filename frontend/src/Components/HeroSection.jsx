@@ -101,11 +101,17 @@ export default function TravelHero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-end h-full pb-20 px-6">
-        <h1 className="text-5xl md:text-7xl font-gilroyRegular text-white text-center mb-4 drop-shadow-2xl ">
-          Welcome to WorldClass Travels
+      <div className="relative z-10 flex flex-col items-center justify-center h-full pb-20 px-6">
+        <h2 className="text-2xl md:text-2xl font-gilroyMedium text-white text-center mb-4 drop-shadow-3xl ">
+          Travel Beyond Limits
+        </h2>
+        <h1 className="text-5xl md:text-7xl font-gilroyMedium text-white text-center mb-4 drop-shadow-2xl ">
+          Explore the World with
         </h1>
-        <p className="text-xl md:text-xl text-white text-center max-w-3xl drop-shadow-lg">
+        <h1 className="text-5xl md:text-7xl font-gilroyMedium text-primaryBlue text-center mb-4 drop-shadow-2xl ">
+          World<span className='text-primaryCyan'>Class</span> Travels
+        </h1>
+        <p className="text-md md:text-md text-white/80 text-center max-w-2xl drop-shadow-lg">
           Explore breathtaking destinations and create unforgettable memories around the world
         </p>
         

@@ -1,82 +1,117 @@
-import React from 'react';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Twitter, Facebook, Instagram, Youtube, Linkedin, MapPin, Phone, Mail } from 'lucide-react';
+import logo from '../Images/logo.png';
 
-const Footer = () => {
+export default function Footer() {
+  const [email, setEmail] = useState('');
+
+  const handleSubmit = () => {
+    if (email) {
+      alert(`Subscribed with email: ${email}`);
+      setEmail('');
+    }
+  };
+
   return (
-    <footer className="bg-gray-900 text-white pt-12 pb-6 border-t border-white">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-          {/* About Section */}
-          <div className="mb-6 md:mb-0">
-            <h3 className="text-2xl font-bold mb-4">World Class Travels</h3>
-            <p className="text-gray-400 mb-4">
-              Your gateway to unforgettable travel experiences. We specialize in creating personalized journeys that leave lasting memories.
+    <footer className="bg-[#0a2351] text-white">
+      <div className="max-w-7xl mx-auto px-8 py-16">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+          {/* Brand Section */}
+          <div>
+            <img src={logo} alt="World Class Travels" className="h-32" />
+            <p className="text-gray-300 text-sm leading-relaxed">
+              Your gateway to unforgettable travel experiences. We create personalized journeys that leave lasting memories.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
-                <FaFacebook size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
-                <FaTwitter size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
-                <FaInstagram size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
-                <FaLinkedin size={20} />
-              </a>
+            
+            {/* Social Icons */}
+            <div className="flex gap-3 mt-6">
+              <button className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-cyan-400 transition-colors">
+                <Twitter size={18} />
+              </button>
+              <button className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-cyan-400 transition-colors">
+                <Facebook size={18} />
+              </button>
+              <button className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-cyan-400 transition-colors">
+                <Instagram size={18} />
+              </button>
+              <button className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-cyan-400 transition-colors">
+                <Youtube size={18} />
+              </button>
+              <button className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-cyan-400 transition-colors">
+                <Linkedin size={18} />
+              </button>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="mb-6 md:mb-0 ">
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Home</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Destinations</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Tours</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Contact</a></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">Home</button></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">Destination</button></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">Ticketing</button></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">Travel Visa</button></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">About Us</button></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">Contact Us</button></li>
             </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="mb-6 md:mb-0">
-            <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <FaMapMarkerAlt className="mt-1 mr-3 text-blue-400" />
-                <span className="text-gray-400">123 Travel Street, Wanderlust City, 10001</span>
-              </li>
-              <li className="flex items-center">
-                <FaPhone className="mr-3 text-blue-400" />
-                <a href="tel:+1234567890" className="text-gray-400 hover:text-white transition-colors duration-300">+1 (234) 567-890</a>
-              </li>
-              <li className="flex items-center">
-                <FaEnvelope className="mr-3 text-blue-400" />
-                <a href="mailto:info@worldclasstravels.com" className="text-gray-400 hover:text-white transition-colors duration-300">info@worldclasstravels.com</a>
-              </li>
+          {/* Customer Services & Newsletter */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Customer Services</h3>
+            <ul className="space-y-2 mb-8">
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">FAQ</button></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">Privacy Policy</button></li>
+              <li><button className="text-gray-300 hover:text-cyan-400 transition-colors text-sm">Terms of Service</button></li>
             </ul>
-          </div>
 
-        </div>
+            <h3 className="text-lg font-semibold mb-4">Join our newsletter</h3>
+            <div className="mb-6">
+              <div className="flex">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email Address"
+                  className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-l-md focus:outline-none focus:border-cyan-400 text-sm"
+                />
+                <button
+                  onClick={handleSubmit}
+                  className="px-6 py-2 bg-cyan-400 hover:bg-cyan-500 rounded-r-md font-semibold text-sm transition-colors"
+                >
+                  SUBMIT
+                </button>
+              </div>
+            </div>
 
-        {/* Copyright */}
-        <div className="border-t border-gray-800 pt-6 mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} World Class Travels. All rights reserved.
-            </p>
-            <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors duration-300">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors duration-300">Terms of Service</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors duration-300">Sitemap</a>
+            {/* Contact Info */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 text-sm">
+                <MapPin size={16} className="mt-0.5 flex-shrink-0 text-cyan-400" />
+                <span className="text-gray-300">123 Travel Street, Wanderlust City, 10001</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Phone size={16} className="flex-shrink-0 text-cyan-400" />
+                <span className="text-gray-300">+1 (234) 567-890</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Mail size={16} className="flex-shrink-0 text-cyan-400" />
+                <a href="mailto:info@worldclasstravels.com" className="text-gray-300 hover:text-cyan-400 transition-colors">
+                  info@worldclasstravels.com
+                </a>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10 text-center">
+          <p className="text-gray-400 text-sm">
+            © 2025 XXXXX (Pvt) Ltd. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}
