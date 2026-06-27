@@ -15,7 +15,6 @@ import RegistrationOTPVerification from './Pages/RegistrationOTPVerification';
 import TicketingPage from './Pages/TicketingPage';
 import SelectVisaPage from './Pages/SelectVisaPage';
 import VisaPage from './Pages/VisaPage';
-{/*import AddNewVisa from './Components/Admin/AddNewVisa';*/}
 
 // Protected Route component for regular users
 const ProtectedUserRoute = () => {

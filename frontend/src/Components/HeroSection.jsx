@@ -18,8 +18,7 @@ const videoURLs = {
 
 export default function TravelHero() {
   const [currentVideo, setCurrentVideo] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   // Array of video URLs - replace these with your actual video URLs
   const videos = [
     videoURLs.australiaVideo,
@@ -41,8 +40,6 @@ export default function TravelHero() {
         nextVideoElement.load();
       }
       
-      setIsTransitioning(true);
-      
       // Start playing next video immediately
       if (nextVideoElement) {
         nextVideoElement.play().catch(err => console.log('Video play error:', err));
@@ -51,7 +48,6 @@ export default function TravelHero() {
       // Change current video after a short delay for crossfade
       setTimeout(() => {
         setCurrentVideo(nextVideoIndex);
-        setIsTransitioning(false);
       }, 100);
     };
 
