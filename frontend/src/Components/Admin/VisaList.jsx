@@ -3,6 +3,7 @@ import { visaAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
+import { Plus, X, Trash2, Clock } from 'lucide-react';
 
 
 const VisaList = () => {
@@ -91,7 +92,7 @@ const VisaList = () => {
     // Handle form submission
     const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     console.log('Form Data:', {
         ...formData,
         coverImage: formData.coverImage ? 'File selected' : 'No file'
@@ -135,7 +136,7 @@ const VisaList = () => {
 
         console.log('Response:', response);
         toast.success('Visa added successfully');
-        
+
         // Rest of your success handling...
     } catch (error) {
         console.error('Error details:', {
@@ -144,7 +145,7 @@ const VisaList = () => {
             status: error.response?.status,
             headers: error.response?.headers
         });
-        
+
         if (error.response?.status === 400) {
             toast.error(`Validation error: ${JSON.stringify(error.response.data)}`);
         } else if (error.response?.status === 401) {
@@ -172,51 +173,59 @@ const VisaList = () => {
     };
 
     if (loading) {
-        return <div className="flex justify-center items-center h-64">Loading...</div>;
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primaryBlue"></div>
+            </div>
+        );
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Visa Management</h1>
+                <div>
+                    <h2 className="text-xl font-gilroyMedium text-slate-800">All Visas</h2>
+                    <p className="text-sm text-slate-500 font-gilroyRegular">Manage the visa packages shown to travellers</p>
+                </div>
                 <button
                     onClick={() => setIsAdding(!isAdding)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    className="flex items-center gap-2 bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white px-4 py-2.5 rounded-xl font-gilroyMedium text-sm shadow-md hover:shadow-lg transition-all"
                 >
+                    {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {isAdding ? 'Cancel' : 'Add New Visa'}
                 </button>
             </div>
 
             {isAdding && (
-                <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-                    <h2 className="text-xl font-semibold mb-4">Add New Visa</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white p-6 rounded-2xl shadow-md mb-8">
+                    <h3 className="text-lg font-gilroyMedium text-slate-800 mb-4">Add New Visa</h3>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Country</label>
+                                <label className="block text-sm font-gilroyMedium text-slate-700 mb-1.5">Country</label>
                                 <input
                                     type="text"
                                     name="country"
                                     value={formData.country}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                    className="block w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primaryBlue focus:border-transparent transition-all"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Duration</label>
+                                <label className="block text-sm font-gilroyMedium text-slate-700 mb-1.5">Duration</label>
                                 <input
                                     type="text"
                                     name="duration"
                                     value={formData.duration}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                    className="block w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primaryBlue focus:border-transparent transition-all"
                                     placeholder="e.g., 30 days"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Price (USD)</label>
+                                <label className="block text-sm font-gilroyMedium text-slate-700 mb-1.5">Price (Rs.)</label>
                                 <input
                                     type="number"
                                     name="price"
@@ -224,49 +233,47 @@ const VisaList = () => {
                                     onChange={handleChange}
                                     min="0"
                                     step="0.01"
-                                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                    className="block w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primaryBlue focus:border-transparent transition-all"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Cover Image</label>
+                                <label className="block text-sm font-gilroyMedium text-slate-700 mb-1.5">Cover Image</label>
                                 <input
                                     id="coverImage"
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    className="mt-1 block w-full text-sm text-gray-500"
+                                    className="block w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primaryBlue/10 file:text-primaryBlue file:font-gilroyMedium"
                                     required
                                 />
                                 {imagePreview && (
-                                    <div className="mt-2">
-                                        <img src={imagePreview} alt="Preview" className="h-20 w-20 object-cover rounded" />
-                                    </div>
+                                    <img src={imagePreview} alt="Preview" className="mt-2 h-16 w-16 object-cover rounded-lg" />
                                 )}
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Description</label>
+                            <label className="block text-sm font-gilroyMedium text-slate-700 mb-1.5">Description</label>
                             <textarea
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
                                 rows="3"
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                className="block w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primaryBlue focus:border-transparent transition-all"
                                 required
                             ></textarea>
                         </div>
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end gap-3 pt-2">
                             <button
                                 type="button"
                                 onClick={() => setIsAdding(false)}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                className="px-5 py-2.5 border border-gray-300 rounded-lg text-slate-700 font-gilroyMedium text-sm hover:bg-gray-50 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                                className="px-5 py-2.5 bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white font-gilroyMedium text-sm rounded-lg shadow-md hover:shadow-lg transition-all"
                             >
                                 Save Visa
                             </button>
@@ -275,49 +282,53 @@ const VisaList = () => {
                 </div>
             )}
 
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="bg-white shadow-sm rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-100">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price (USD)</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">Image</th>
+                                <th className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">Country</th>
+                                <th className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">Duration</th>
+                                <th className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">Price</th>
+                                <th className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3.5 text-right text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-100">
                             {visas.length > 0 ? (
                                 visas.map((visa) => (
-                                    <tr key={visa._id} className="hover:bg-gray-50">
+                                    <tr key={visa._id} className="hover:bg-gray-50/80 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {visa.coverImage && (
                                                 <img
-                                                    src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}${visa.coverImage}`}
+                                                    src={visa.coverImage}
                                                     alt={visa.country}
-                                                    className="h-10 w-10 rounded-full object-cover"
+                                                    className="h-11 w-11 rounded-xl object-cover"
                                                 />
                                             )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{visa.country}</div>
+                                            <div className="text-sm font-gilroyMedium text-slate-800">{visa.country}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{visa.duration}</div>
+                                            <span className="inline-flex items-center gap-1 text-xs font-gilroyMedium text-slate-600 bg-gray-100 px-2.5 py-1 rounded-full">
+                                                <Clock className="w-3 h-3" />
+                                                {visa.duration}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">${parseFloat(visa.price).toFixed(2)}</div>
+                                            <div className="text-sm font-gilroyMedium text-primaryBlue">Rs. {parseFloat(visa.price).toLocaleString()}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-900 max-w-xs truncate">{visa.description}</div>
+                                            <div className="text-sm text-slate-600 font-gilroyRegular max-w-xs truncate">{visa.description}</div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <button
                                                 onClick={() => handleDelete(visa._id)}
-                                                className="text-red-600 hover:text-red-900 mr-4"
+                                                className="inline-flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-gilroyMedium transition-colors"
                                             >
+                                                <Trash2 className="w-3.5 h-3.5" />
                                                 Delete
                                             </button>
                                         </td>
@@ -325,7 +336,7 @@ const VisaList = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colSpan="6" className="px-6 py-10 text-center text-sm text-slate-500 font-gilroyRegular">
                                         No visas found. Click "Add New Visa" to get started.
                                     </td>
                                 </tr>

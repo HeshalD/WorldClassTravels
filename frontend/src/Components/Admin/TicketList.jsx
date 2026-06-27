@@ -1,12 +1,12 @@
 import React from 'react';
-import { ticketAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import { CheckCircle2, XCircle, BadgeCheck } from 'lucide-react';
 
 const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-  completed: 'bg-blue-100 text-blue-800',
+  pending: 'bg-amber-100 text-amber-700',
+  confirmed: 'bg-emerald-100 text-emerald-700',
+  cancelled: 'bg-red-100 text-red-700',
+  completed: 'bg-primaryBlue/10 text-primaryBlue',
 };
 
 const TicketList = ({ tickets, onUpdateStatus }) => {
@@ -27,108 +27,114 @@ const TicketList = ({ tickets, onUpdateStatus }) => {
   };
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">Ticket Management</h3>
+    <div>
+      <div className="mb-6">
+        <h2 className="text-xl font-gilroyMedium text-slate-800">All Bookings</h2>
+        <p className="text-sm text-slate-500 font-gilroyRegular">Review and update the status of flight booking requests</p>
       </div>
-      
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Booking ID
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Passenger
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Trip
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Dates
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {tickets.length === 0 ? (
+
+      <div className="bg-white shadow-sm rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                  No tickets found
-                </td>
+                <th scope="col" className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">
+                  Booking ID
+                </th>
+                <th scope="col" className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">
+                  Passenger
+                </th>
+                <th scope="col" className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">
+                  Trip
+                </th>
+                <th scope="col" className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">
+                  Dates
+                </th>
+                <th scope="col" className="px-6 py-3.5 text-left text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th scope="col" className="px-6 py-3.5 text-right text-xs font-gilroyMedium text-slate-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
-            ) : (
-              tickets.map((ticket) => (
-                <tr key={ticket._id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {ticket._id.substring(0, 8)}...
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {ticket.userFirstName} {ticket.userLastName}
-                    </div>
-                    <div className="text-sm text-gray-500">{ticket.userEmail}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {ticket.departureLocation} → {ticket.arrivalLocation}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {ticket.tripType} • {ticket.cabinType}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>Dep: {formatDate(ticket.departureDate)}</div>
-                    {ticket.returnDate && <div>Ret: {formatDate(ticket.returnDate)}</div>}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        statusColors[ticket.status?.toLowerCase()] || 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {ticket.status || 'Pending'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="space-y-2">
-                      {ticket.status !== 'confirmed' && (
-                        <button
-                          onClick={() => handleStatusChange(ticket._id, 'confirmed')}
-                          className="text-green-600 hover:text-green-900 block w-full text-left"
-                        >
-                          Confirm
-                        </button>
-                      )}
-                      {ticket.status !== 'cancelled' && (
-                        <button
-                          onClick={() => handleStatusChange(ticket._id, 'cancelled')}
-                          className="text-red-600 hover:text-red-900 block w-full text-left"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                      {ticket.status !== 'completed' && (
-                        <button
-                          onClick={() => handleStatusChange(ticket._id, 'completed')}
-                          className="text-blue-600 hover:text-blue-900 block w-full text-left"
-                        >
-                          Mark as Completed
-                        </button>
-                      )}
-                    </div>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {tickets.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-10 text-center text-sm text-slate-500 font-gilroyRegular">
+                    No bookings found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                tickets.map((ticket) => (
+                  <tr key={ticket._id} className="hover:bg-gray-50/80 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-gilroyRegular">
+                      {ticket._id.substring(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-gilroyMedium text-slate-800">
+                        {ticket.userFirstName} {ticket.userLastName}
+                      </div>
+                      <div className="text-sm text-slate-500 font-gilroyRegular">{ticket.userEmail}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-800 font-gilroyMedium">
+                        {ticket.departureLocation} → {ticket.arrivalLocation}
+                      </div>
+                      <div className="text-sm text-slate-500 font-gilroyRegular">
+                        {ticket.tripType} • {ticket.cabinType}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-gilroyRegular">
+                      <div>Dep: {formatDate(ticket.departureDate)}</div>
+                      {ticket.returnDate && <div>Ret: {formatDate(ticket.returnDate)}</div>}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-3 py-1 inline-flex text-xs leading-5 font-gilroyMedium rounded-full ${
+                          statusColors[ticket.status?.toLowerCase()] || 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {ticket.status || 'Pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {ticket.status !== 'confirmed' && (
+                          <button
+                            onClick={() => handleStatusChange(ticket._id, 'confirmed')}
+                            title="Confirm"
+                            className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {ticket.status !== 'completed' && (
+                          <button
+                            onClick={() => handleStatusChange(ticket._id, 'completed')}
+                            title="Mark as completed"
+                            className="p-2 rounded-lg text-primaryBlue hover:bg-primaryBlue/10 transition-colors"
+                          >
+                            <BadgeCheck className="w-4 h-4" />
+                          </button>
+                        )}
+                        {ticket.status !== 'cancelled' && (
+                          <button
+                            onClick={() => handleStatusChange(ticket._id, 'cancelled')}
+                            title="Cancel"
+                            className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
