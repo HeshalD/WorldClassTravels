@@ -199,7 +199,7 @@ export default function Register() {
                                     />
                                 </div>
                                 <label htmlFor="acceptTerms" className="ml-2 block text-sm text-gray-700">
-                                    I agree to the <a href="#" className="text-primaryBlue hover:secondaryBlue">Terms of Service</a> and <a href="#" className="text-primaryBlue hover:secondaryBlue">Privacy Policy</a>
+                                    I agree to the <button type="button" className="text-primaryBlue hover:secondaryBlue underline">Terms of Service</button> and <button type="button" className="text-primaryBlue hover:secondaryBlue underline">Privacy Policy</button>
                                 </label>
                             </div>
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import PixelTransition from './PixelTransition';
 import india from '../Images/india1.jpg';
 import australia from '../Images/australia1.jpg';
 import china from '../Images/china1.jpg';
