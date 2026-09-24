@@ -6,6 +6,10 @@ import authRoutes from './routes/authRoutes.js';
 import adminAuthRoutes from './routes/adminAuthRoutes.js';
 import visaRoutes from './routes/visaRoutes.js';
 import ticketRoutes from './routes/ticketingRoutes.js';
+import dns from 'dns';
+
+// Node's resolver can ignore the OS DNS settings and fail SRV lookups (querySrv ECONNREFUSED)
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 dotenv.config({ path: './.env' });  
 
