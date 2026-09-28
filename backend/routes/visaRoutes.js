@@ -4,13 +4,7 @@ import { body, validationResult } from 'express-validator';
 import mongoose from 'mongoose';
 import { protect, isAdmin } from '../middleware/authMiddleware.js';
 import uploadVisaImage from '../middleware/upload.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import cloudinary from '../config/cloudinary.js';
 
 const router = express.Router();
 
@@ -30,8 +24,7 @@ router.post('/', protect, isAdmin, uploadVisaImage, [
 
     try {
         const { country, duration, price, description } = req.body;
-        
-        // Check if visa for this country already exists
+
         const existingVisa = await Visa.findOne({ country });
         if (existingVisa) {
             return res.status(400).json({
@@ -45,24 +38,16 @@ router.post('/', protect, isAdmin, uploadVisaImage, [
             duration,
             price,
             description,
-            coverImage: req.file?.path, // Cloudinary URL
-            imagePath: req.file?.filename // Cloudinary public_id
+            coverImage: req.file?.path,      // Cloudinary URL  ✅
+            imagePath: req.file?.filename    // Cloudinary public_id ✅
         });
 
         await newVisa.save();
-        
-        res.status(201).json({
-            success: true,
-            data: newVisa
-        });
+        res.status(201).json({ success: true, data: newVisa });
 
     } catch (error) {
         console.error('Error creating visa:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 });
 
@@ -79,22 +64,36 @@ router.get('/', async (req, res) => {
     }
 });
 
+// @route   GET /api/visas/:id
+// @desc    Get visa by ID
+// @access  Public
+router.get('/:id', async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'Invalid visa ID' });
+        }
+        const visa = await Visa.findById(req.params.id);
+        if (!visa) {
+            return res.status(404).json({ success: false, message: 'Visa not found' });
+        }
+        res.status(200).json({ success: true, data: visa });
+    } catch (error) {
+        console.error('Error fetching visa:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // @route   GET /api/visas/country/:country
 // @desc    Get visa by country name
 // @access  Public
 router.get('/country/:country', async (req, res) => {
     try {
-        const visa = await Visa.findOne({ 
-            country: { $regex: new RegExp('^' + req.params.country + '$', 'i') } 
+        const visa = await Visa.findOne({
+            country: { $regex: new RegExp('^' + req.params.country + '$', 'i') }
         });
-        
         if (!visa) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Visa not found for the specified country' 
-            });
+            return res.status(404).json({ success: false, message: 'Visa not found for the specified country' });
         }
-        
         res.status(200).json({ success: true, data: visa });
     } catch (error) {
         console.error('Error fetching visa by country:', error);
@@ -106,10 +105,10 @@ router.get('/country/:country', async (req, res) => {
 // @desc    Update a visa
 // @access  Private/Admin
 router.put('/:id', protect, isAdmin, uploadVisaImage, [
-    body('country', 'Country is required').optional().trim().notEmpty(),
-    body('duration', 'Duration is required').optional().trim().notEmpty(),
-    body('price', 'Valid price is required').optional().isNumeric().isFloat({ min: 0 }),
-    body('description', 'Description is required').optional().trim().notEmpty()
+    body('country').optional().trim().notEmpty().withMessage('Country cannot be empty'),
+    body('duration').optional().trim().notEmpty().withMessage('Duration cannot be empty'),
+    body('price').optional().isNumeric().isFloat({ min: 0 }).withMessage('Valid price is required'),
+    body('description').optional().trim().notEmpty().withMessage('Description cannot be empty')
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -117,46 +116,41 @@ router.put('/:id', protect, isAdmin, uploadVisaImage, [
     }
 
     try {
-        // Check if ID is valid
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Invalid visa ID' 
-            });
+            return res.status(400).json({ success: false, message: 'Invalid visa ID' });
         }
 
-        // Check if country already exists for another visa
         if (req.body.country) {
-            const existingVisa = await Visa.findOne({ 
+            const existingVisa = await Visa.findOne({
                 _id: { $ne: req.params.id },
-                country: req.body.country 
+                country: req.body.country
             });
-            
             if (existingVisa) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Visa for this country already exists'
-                });
+                return res.status(400).json({ success: false, message: 'Visa for this country already exists' });
             }
         }
 
-        // Store old image path for deletion if new image is uploaded
-        let oldImagePath = null;
-        
-        // Build update object
         const updateFields = {};
         if (req.body.country) updateFields.country = req.body.country;
         if (req.body.duration) updateFields.duration = req.body.duration;
         if (req.body.price) updateFields.price = req.body.price;
         if (req.body.description) updateFields.description = req.body.description;
-        
-        // Handle image update if new file is uploaded
+
+        // Handle image update — FIX: coverImage = URL (path), imagePath = public_id (filename)
         if (req.file) {
-            // Store old image path for deletion after successful update
-            const visa = await Visa.findById(req.params.id);
-            oldImagePath = visa.imagePath;
-            updateFields.coverImage = req.file.filename;
-            updateFields.imagePath = req.file.path;
+            const oldVisa = await Visa.findById(req.params.id);
+
+            // Delete old image from Cloudinary if it exists
+            if (oldVisa?.imagePath) {
+                try {
+                    await cloudinary.uploader.destroy(oldVisa.imagePath);
+                } catch (err) {
+                    console.error('Error deleting old Cloudinary image:', err);
+                }
+            }
+
+            updateFields.coverImage = req.file.path;      // Cloudinary URL ✅
+            updateFields.imagePath = req.file.filename;   // Cloudinary public_id ✅
         }
 
         const updatedVisa = await Visa.findByIdAndUpdate(
@@ -166,26 +160,11 @@ router.put('/:id', protect, isAdmin, uploadVisaImage, [
         );
 
         if (!updatedVisa) {
-            // If update failed, remove the newly uploaded file
-            if (req.file) {
-                fs.unlink(path.join(__dirname, '../', req.file.path), (err) => {
-                    if (err) console.error('Error deleting file:', err);
-                });
-            }
-            return res.status(404).json({
-                success: false,
-                message: 'Visa not found'
-            });
-        }
-        
-        // Delete old image if a new one was uploaded and update was successful
-        if (oldImagePath) {
-            fs.unlink(path.join(__dirname, '../', oldImagePath), (err) => {
-                if (err) console.error('Error deleting old image:', err);
-            });
+            return res.status(404).json({ success: false, message: 'Visa not found' });
         }
 
         res.status(200).json({ success: true, data: updatedVisa });
+
     } catch (error) {
         console.error('Error updating visa:', error);
         res.status(500).json({ success: false, message: 'Server error' });
@@ -199,25 +178,21 @@ router.delete('/:id', protect, isAdmin, async (req, res) => {
     try {
         const visa = await Visa.findById(req.params.id);
         if (!visa) {
-            return res.status(404).json({
-                success: false,
-                message: 'Visa not found'
-            });
+            return res.status(404).json({ success: false, message: 'Visa not found' });
         }
 
-        // Delete the image file
+        // Delete image from Cloudinary
         if (visa.imagePath) {
-            fs.unlink(path.join(__dirname, '../', visa.imagePath), (err) => {
-                if (err) console.error('Error deleting image file:', err);
-            });
+            try {
+                await cloudinary.uploader.destroy(visa.imagePath);
+            } catch (err) {
+                console.error('Error deleting Cloudinary image:', err);
+            }
         }
 
         await Visa.findByIdAndDelete(req.params.id);
-        res.json({ success: true, message: 'Visa removed' });
-        res.status(200).json({ 
-            success: true, 
-            message: 'Visa deleted successfully' 
-        });
+        res.status(200).json({ success: true, message: 'Visa deleted successfully' });
+
     } catch (error) {
         console.error('Error deleting visa:', error);
         res.status(500).json({ success: false, message: 'Server error' });

@@ -8,38 +8,48 @@ const api = axios.create({
   },
 });
 
-// Add a request interceptor to add the auth token to requests
+// Request interceptor — attaches the correct token as Authorization: Bearer
 api.interceptors.request.use(
   (config) => {
-    const isAdminRoute = config.url.startsWith('/admin/');
     const adminToken = localStorage.getItem('adminToken');
-    const token = localStorage.getItem('token');
-    
-    if (isAdminRoute && adminToken) {
-      config.headers['x-auth-token'] = adminToken;
-    } else if (token) {
-      config.headers['x-auth-token'] = token;
+    const userToken = localStorage.getItem('token');
+
+    // Admin token takes priority
+    const token = adminToken || userToken;
+
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
-    
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle 401 Unauthorized responses
+// Response interceptor — redirect on 401 only for non-login routes
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      const isAdminRoute = error.config.url.includes('/admin/');
-      // Only redirect if it's not an admin route
-      if (!isAdminRoute) {
+    const url = error.config?.url || '';
+    const isLoginRoute = url.includes('/login');
+
+    // Never redirect if the 401 came from a login attempt —
+    // that just means wrong credentials and the form should show the toast
+    if (error.response?.status === 401 && !isLoginRoute) {
+      const adminToken = localStorage.getItem('adminToken');
+
+      if (adminToken) {
+        // Admin session expired
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('admin');
+        window.location.href = '/admin/login';
+      } else {
+        // Regular user session expired
         localStorage.removeItem('token');
         window.location.href = '/login';
       }
     }
+
     return Promise.reject(error);
   }
 );
@@ -52,35 +62,25 @@ export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (userData) => api.post('/auth/register', userData),
   verifyRegistrationOtp: (data) => api.post('/auth/verify-otp', data),
-  resendRegistrationOtp: (data) => {
-    // For resend, we'll call the register endpoint again with the same email
-    // The backend will generate a new OTP and send it
-    const { email } = data;
-    return api.post('/auth/resend-otp', { email });
-  },
+  resendRegistrationOtp: ({ email }) => api.post('/auth/resend-otp', { email }),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
   updateProfile: (userData) => api.patch('/auth/update-account', userData),
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
-  resendVerification: (email) => api.post('/auth/resend-verification', { email })
+  resendVerification: (email) => api.post('/auth/resend-verification', { email }),
 };
 
 // Visa API
-// Update the visaAPI object in api.js
 export const visaAPI = {
-    getAll: () => api.get('/visas'),
-    getById: (id) => api.get(`/visas/${id}`),
-    create: (data) => api.post('/visas', data, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    }),
-    update: (id, data) => api.put(`/visas/${id}`, data, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    }),
-    delete: (id) => api.delete(`/visas/${id}`)
+  getAll: () => api.get('/visas'),
+  getById: (id) => api.get(`/visas/${id}`),
+  create: (data) => api.post('/visas', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  update: (id, data) => api.put(`/visas/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  delete: (id) => api.delete(`/visas/${id}`),
 };
 
 // Ticket API

@@ -2,7 +2,6 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 
 dotenv.config({ path: './.env' });
 
@@ -20,8 +19,16 @@ const HARDCODED_ADMIN = {
     role: 'superadmin'
 };
 
+// Helper — reads token from Authorization: Bearer header
+const getTokenFromHeader = (req) => {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.split(' ')[1];
+    }
+    return null;
+};
+
 // @route   POST /api/admin/login
-// @desc    Authenticate admin & get token
 // @access  Public
 router.post('/login', [
     body('email', 'Please include a valid email').isEmail().normalizeEmail(),
@@ -35,23 +42,14 @@ router.post('/login', [
     const { email, password } = req.body;
 
     try {
-        // Check if email matches hardcoded admin
         if (email !== HARDCODED_ADMIN.email) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid credentials' 
-            });
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        // Check password (direct comparison since we're using plain text in this case)
         if (password !== HARDCODED_ADMIN.password) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid credentials' 
-            });
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        // Create and return JWT token
         const payload = {
             admin: {
                 id: HARDCODED_ADMIN.id,
@@ -59,132 +57,84 @@ router.post('/login', [
             }
         };
 
-        jwt.sign(
-            payload,
-            JWT_SECRET,
-            { expiresIn: JWT_EXPIRES_IN },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ 
-                    success: true, 
-                    token,
-                    admin: {
-                        id: HARDCODED_ADMIN.id,
-                        name: HARDCODED_ADMIN.name,
-                        email: HARDCODED_ADMIN.email,
-                        role: HARDCODED_ADMIN.role
-                    }
-                });
-            }
-        );
+        jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN }, (err, token) => {
+            if (err) throw err;
+            res.json({
+                success: true,
+                token,
+                admin: {
+                    id: HARDCODED_ADMIN.id,
+                    name: HARDCODED_ADMIN.name,
+                    email: HARDCODED_ADMIN.email,
+                    role: HARDCODED_ADMIN.role
+                }
+            });
+        });
     } catch (err) {
         console.error('Admin login error:', err);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 
 // @route   POST /api/admin/logout
-// @desc    Logout admin (client should remove the token)
-// @access  Private (Admin)
+// @access  Private
 router.post('/logout', (req, res) => {
-    // Since JWT is stateless, the client needs to remove the token
-    res.json({ 
-        success: true, 
-        message: 'Logged out successfully' 
-    });
+    res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // @route   GET /api/admin/me
-// @desc    Get current admin profile
 // @access  Private (Admin)
 router.get('/me', async (req, res) => {
     try {
-        // Get token from header
-        const token = req.header('x-auth-token');
-        
-        // Check if no token
+        // FIX: read from Authorization: Bearer instead of x-auth-token
+        const token = getTokenFromHeader(req);
+
         if (!token) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'No token, authorization denied' 
-            });
+            return res.status(401).json({ success: false, message: 'No token, authorization denied' });
         }
 
-        // Verify token
         const decoded = jwt.verify(token, JWT_SECRET);
-        
-        // Check if admin ID matches hardcoded admin
+
         if (decoded.admin.id !== HARDCODED_ADMIN.id) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Admin not found' 
-            });
+            return res.status(404).json({ success: false, message: 'Admin not found' });
         }
 
         const { password, ...adminData } = HARDCODED_ADMIN;
-        res.json({ 
-            success: true, 
-            admin: adminData 
-        });
+        res.json({ success: true, admin: adminData });
     } catch (err) {
         console.error('Get admin profile error:', err);
         if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Token is not valid' 
-            });
+            return res.status(401).json({ success: false, message: 'Token is not valid' });
         }
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 
-// Middleware to verify admin token
+// Admin auth middleware
+// FIX: reads from Authorization: Bearer instead of x-auth-token
 export const adminAuth = async (req, res, next) => {
     try {
-        // Get token from header
-        const token = req.header('x-auth-token');
-        
-        // Check if no token
+        const token = getTokenFromHeader(req);
+
         if (!token) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'No token, authorization denied' 
-            });
+            return res.status(401).json({ success: false, message: 'No token, authorization denied' });
         }
 
-        // Verify token
         const decoded = jwt.verify(token, JWT_SECRET);
-        
-        // Check if admin ID matches hardcoded admin
+
         if (decoded.admin.id !== HARDCODED_ADMIN.id) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Admin not found' 
-            });
+            return res.status(404).json({ success: false, message: 'Admin not found' });
         }
 
-        // Add admin to request object
         const { password, ...adminData } = HARDCODED_ADMIN;
         req.admin = adminData;
         next();
     } catch (err) {
         console.error('Admin auth middleware error:', err);
         if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Token is not valid' 
-            });
+            return res.status(401).json({ success: false, message: 'Token is not valid' });
         }
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
