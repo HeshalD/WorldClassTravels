@@ -49,6 +49,7 @@ const VisaList = () => {
         }
     };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchVisas(); }, []);
 
     // ── Add form helpers ─────────────────────────────────────────────────────
